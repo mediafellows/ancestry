@@ -237,7 +237,7 @@ module Ancestry
       column = get_ancestry_column_name
 
       <<-SQL
-        #{table}.#{column} LIKE '#{child_ancestry}/%' OR #{table}.#{column} = '#{child_ancestry}'
+        #{table}.#{column} LIKE '#{child_ancestry}/%' OR #{table}.#{column} LIKE '#{child_ancestry}'
       SQL
     end
 
@@ -256,7 +256,7 @@ module Ancestry
       column = get_ancestry_column_name
 
       <<-SQL
-        #{table}.#{get_primary_key_column} = '#{self.id}' OR #{table}.#{column} LIKE '#{child_ancestry}/%' OR #{table}.#{column} = '#{child_ancestry}'
+        #{table}.#{get_primary_key_column} = '#{self.id}' OR #{table}.#{column} LIKE '#{child_ancestry}/%' OR #{table}.#{column} LIKE '#{child_ancestry}'
       SQL
     end
 
