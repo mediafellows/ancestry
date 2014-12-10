@@ -92,7 +92,7 @@ module Ancestry
     end
 
     # Ancestors
-    
+
     def ancestry_changed?
       changed.include?(self.ancestry_base_class.ancestry_column.to_s)
     end
@@ -144,7 +144,7 @@ module Ancestry
     end
 
     # Parent
-    
+
     def parent= parent
       write_attribute(self.ancestry_base_class.ancestry_column, if parent.nil? then nil else parent.child_ancestry end)
     end
@@ -166,7 +166,7 @@ module Ancestry
     end
 
     # Root
-    
+
     def root_id
       if ancestor_ids.empty? then id else ancestor_ids.first end
     end
@@ -181,7 +181,7 @@ module Ancestry
     alias :root? :is_root?
 
     # Children
-    
+
     def child_conditions
       t = get_arel_table
       t[get_ancestry_column].eq(child_ancestry)
@@ -206,7 +206,7 @@ module Ancestry
     alias_method :childless?, :is_childless?
 
     # Siblings
-    
+
     def sibling_conditions
       t = get_arel_table
       t[get_ancestry_column].eq(read_attribute(self.ancestry_base_class.ancestry_column))
@@ -231,10 +231,14 @@ module Ancestry
     alias_method :only_child?, :is_only_child?
 
     # Descendants
-    
+
     def descendant_conditions
-      t = get_arel_table
-      t[get_ancestry_column].matches("#{child_ancestry}/%").or(t[get_ancestry_column].eq(child_ancestry))
+      table  = get_arel_table_name
+      column = get_ancestry_column_name
+
+      <<-SQL
+        #{table}.#{column} LIKE '#{child_ancestry}/%' OR #{table}.#{column} = '#{child_ancestry}'
+      SQL
     end
 
     def descendants depth_options = {}
@@ -246,10 +250,14 @@ module Ancestry
     end
 
     # Subtree
-    
+
     def subtree_conditions
-      t = get_arel_table
-      t[get_primary_key_column].eq(self.id).or(t[get_ancestry_column].matches("#{child_ancestry}/%")).or(t[get_ancestry_column].eq(child_ancestry))
+      table  = get_arel_table_name
+      column = get_ancestry_column_name
+
+      <<-SQL
+        #{table}.#{get_primary_key_column} = '#{self.id}' OR #{table}.#{column} LIKE '#{child_ancestry}/%' OR #{table}.#{column} = '#{child_ancestry}'
+      SQL
     end
 
     def subtree depth_options = {}
@@ -261,7 +269,7 @@ module Ancestry
     end
 
     # Callback disabling
-    
+
     def without_ancestry_callbacks
       @disable_ancestry_callbacks = true
       yield
@@ -305,12 +313,20 @@ module Ancestry
       self.ancestry_base_class.arel_table
     end
 
+    def get_arel_table_name
+      self.ancestry_base_class.arel_table.name
+    end
+
     def get_primary_key_column
       self.ancestry_base_class.primary_key.to_sym
     end
 
     def get_ancestry_column
       self.ancestry_base_class.ancestry_column.to_sym
+    end
+
+    def get_ancestry_column_name
+      get_ancestry_column
     end
   end
 end
