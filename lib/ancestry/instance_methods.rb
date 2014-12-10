@@ -214,10 +214,17 @@ module Ancestry
     def sibling_conditions
       table  = get_arel_table_name
       column = get_ancestry_column_name
-
-      <<-SQL
-        #{table}.#{column} LIKE '#{read_attribute(self.ancestry_base_class.ancestry_column)}'
-      SQL
+      value  = read_attribute(self.ancestry_base_class.ancestry_column)
+      
+      if value.nil?
+        <<-SQL
+          #{table}.#{column} IS NULL
+        SQL
+      else
+        <<-SQL
+          #{table}.#{column} LIKE '#{value}'
+        SQL
+      end
     end
 
     def siblings
