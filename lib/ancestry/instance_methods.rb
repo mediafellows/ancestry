@@ -183,8 +183,12 @@ module Ancestry
     # Children
 
     def child_conditions
-      t = get_arel_table
-      t[get_ancestry_column].eq(child_ancestry)
+      table  = get_arel_table_name
+      column = get_ancestry_column_name
+
+      <<-SQL
+        #{table}.#{column} LIKE '#{child_ancestry}'
+      SQL
     end
 
     def children
@@ -208,8 +212,12 @@ module Ancestry
     # Siblings
 
     def sibling_conditions
-      t = get_arel_table
-      t[get_ancestry_column].eq(read_attribute(self.ancestry_base_class.ancestry_column))
+      table  = get_arel_table_name
+      column = get_ancestry_column_name
+
+      <<-SQL
+        #{table}.#{column} LIKE '#{read_attribute(self.ancestry_base_class.ancestry_column)}'
+      SQL
     end
 
     def siblings
