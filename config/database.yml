@@ -1,0 +1,6 @@
+adapter: postgresql
+host: '127.0.0.1'
+username: postgres
+pool: 5
+timeout: 5000
+database: ancestry_test

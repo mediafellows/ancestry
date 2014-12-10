@@ -2,13 +2,8 @@ require 'rubygems'
 require 'bundler/setup'
 require 'active_record'
 require 'active_support/test_case'
-require 'active_support/buffered_logger'
-require 'test/unit'
-require 'debugger'
-require 'coveralls'
+require "minitest/autorun"
 require 'logger'
-
-Coveralls.wear!
 
 # Make absolutely sure we are testing local ancestry
 require File.expand_path('../../lib/ancestry', __FILE__)
@@ -21,22 +16,22 @@ class AncestryTestDatabase
     ActiveRecord::Base.logger.level = Logger::Severity::UNKNOWN
 
     # Assume Travis CI database config if no custom one exists
-    filename = if File.exists?(File.expand_path('../database.yml', __FILE__))
-      File.expand_path('../database.yml', __FILE__)
-    else
-      File.expand_path('../database.ci.yml', __FILE__)
-    end
+    # filename =
+
+    ActiveRecord::Base.establish_connection(YAML::load_file(File.join(File.expand_path('../../config/database.yml', __FILE__))))
+
+    # ActiveRecord::Base.establish_connection(filename)
 
     # Setup database connection
-    YAML.load(File.open(filename).read).values.each do |config|
-      begin
-        ActiveRecord::Base.establish_connection config
-        break if ActiveRecord::Base.connection
-      rescue LoadError, RuntimeError
-        # Try if adapter can be loaded for next config
-      end
-    end
-    raise 'Could not load any database adapter!' unless ActiveRecord::Base.connected?
+    # YAML.load(File.open(filename).read).values.each do |config|
+    #   begin
+    #     ActiveRecord::Base.establish_connection config
+    #     break if ActiveRecord::Base.connection
+    #   rescue LoadError, RuntimeError
+    #     # Try if adapter can be loaded for next config
+    #   end
+    # end
+    # raise 'Could not load any database adapter!' unless ActiveRecord::Base.connected?
   end
 
   def self.with_model options = {}
